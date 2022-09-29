@@ -36,7 +36,7 @@ const isEditor = !! wpDataSelect( 'core/editor' );
 
 // This is needed to ensure that the payment methods are displayed in the editor
 if ( isEditor ) {
-	subscribe( async () => {
+	const unsubscribeEditor = subscribe( async () => {
 		await checkPaymentMethodsCanPay();
 		await checkPaymentMethodsCanPay( true );
 	} );
@@ -45,6 +45,7 @@ if ( isEditor ) {
 		wpDataDispatch(
 			'wc/store/payment-methods'
 		).initializePaymentMethodDataStore();
+		unsubscribeEditor();
 		unsubscribeInitializePaymentMethodDataStore();
 	} );
 }
