@@ -7,6 +7,8 @@ import { __ } from '@wordpress/i18n';
 import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
 import { PanelBody, ToggleControl } from '@wordpress/components';
 import { innerBlockAreas } from '@woocommerce/blocks-checkout';
+import { useDispatch, useSelect } from '@wordpress/data';
+import { CHECKOUT_STORE_KEY } from '@woocommerce/block-data';
 
 /**
  * Internal dependencies
@@ -33,7 +35,23 @@ export const Edit = ( {
 	};
 	setAttributes: ( attributes: Record< string, unknown > ) => void;
 } ): JSX.Element => {
-	const [ currentView, changeView ] = useState( 'shipping' );
+	const { prefersCollection } = useSelect( ( select ) => {
+		const checkoutStore = select( CHECKOUT_STORE_KEY );
+		return {
+			checkoutIsProcessing: checkoutStore.isProcessing(),
+			prefersCollection: checkoutStore.prefersCollection(),
+		};
+	} );
+	const { setPrefersCollection } = useDispatch( CHECKOUT_STORE_KEY );
+
+	const onChange = ( method: string ) => {
+		if ( method === 'pickup' ) {
+			setPrefersCollection( true );
+		} else {
+			setPrefersCollection( false );
+		}
+	};
+
 	return (
 		<FormStepBlock
 			attributes={ attributes }
@@ -80,8 +98,8 @@ export const Edit = ( {
 				</PanelBody>
 			</InspectorControls>
 			<Block
-				checked={ currentView }
-				onChange={ changeView }
+				checked={ prefersCollection ? 'pickup' : 'shipping' }
+				onChange={ onChange }
 				showPrice={ attributes.showPrice }
 				showIcon={ attributes.showIcon }
 			/>
